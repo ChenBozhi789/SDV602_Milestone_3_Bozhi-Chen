@@ -1,0 +1,35 @@
+2a86ef82b86f547e5b33df59dea5b840
+
+https://api.openweathermap.org/data/2.5/weather?q=Nelson,NZ&appid={2a86ef82b86f547e5b33df59dea5b840}&units=metric&mode=csv
+
+1. Download openweather data csv file
+2. Implement Local Data Storage
+
+
+Local Data Storage -> 1. Implement multi-user aspects of your app (30 marks) -> 2. Implement remote storage are retrieval of data sources.
+ Data for DES is read from a remote data store (Use remote data services) (30 marks)
+
+Required database:
+1. tbUser
+2. tbCurrentData
+3. tbForecastData
+4. tbChat
+
+
+File path:
+local_data:
+D:\my_work\SDV602\Milestone_3\SDV602_Milestone_3_Bozhi-Chen\local_data
+
+DONE:
+OpenWeatherAPI -> 获取天气数据 -> 存储到JSnDrop
+
+TO DO:
+ -> 从 JSnDrop 读取数据 -> 显示图表
+
+从 JSnDrop 读取数据
+1. SELECT 从 JsnDrop 获取数据
+2. 保存到本地（以什么方式？csv文件还是创建变量来进行存储？）
+
+显示图表
+1. 调用绘制 plot 参数来实现
+
