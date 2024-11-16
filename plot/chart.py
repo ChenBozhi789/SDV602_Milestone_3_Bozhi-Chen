@@ -19,13 +19,17 @@ def draw_figure(canvas, figure):
     Returns:
         FigureCanvasTkAgg: The figure canvas object that allows further manipulation.
     """
-    # Convert Matplotlib figure (i.e., a chart object) to FigureCanvasTkAgg object
-    figure_canvas_agg = FigureCanvasTkAgg(figure, canvas)
-    # Drawing chart
-    figure_canvas_agg.draw()
-    # Place a Matplotlib chart in a Tkinter window and control how it is laid out.
-    figure_canvas_agg.get_tk_widget().pack(side='top', fill='both', expand=1)  
-    return figure_canvas_agg
+    try:
+        # Convert Matplotlib figure (i.e., a chart object) to FigureCanvasTkAgg object
+        figure_canvas_agg = FigureCanvasTkAgg(figure, canvas)
+        # Drawing chart on Canvas control
+        figure_canvas_agg.draw()
+        # Place a Matplotlib chart in a Tkinter window and control how it is laid out.
+        figure_canvas_agg.get_tk_widget().pack(side='top', fill='both', expand=1)  
+        return figure_canvas_agg
+    except Exception as e:
+        print("This is error message: ", e)    
+    
 
 # Need explanation
 def delete_figure_agg(figure_agg):
@@ -38,22 +42,28 @@ def delete_figure_agg(figure_agg):
     Returns:
         None
     """
-    figure_agg.get_tk_widget().pack_forget()
-    plt.close('all')
+    try:
+        figure_agg.get_tk_widget().pack_forget()
+        plt.close('all')
+    except Exception as e:
+        print("This is error message: ", e)
 
-# def print_placeholder():
-#     """
-#     Create a placeholder chart when there is no data to display.
+def print_placeholder():
+    """
+    Create a placeholder chart when there is no data to display.
 
-#     Returns:
-#         matplotlib.figure.Figure: A Matplotlib figure object with a placeholder chart.
-#     """
-#     fig, ax = plt.subplots(figsize=(10, 6))
-#     ax.text(0.5, 0.5, 'Chart Placeholder', horizontalalignment='center', verticalalignment='center', transform=ax.transAxes)
-#     # Hide the x and y axis ticks
-#     ax.set_xticks([])
-#     ax.set_yticks([]) 
-#     return fig, ax
+    Returns:
+        matplotlib.figure.Figure: A Matplotlib figure object with a placeholder chart.
+    """
+    try:
+        fig, ax = plt.subplots(figsize=(10, 6))
+        ax.text(0.5, 0.5, 'Chart will display here, you should load/upload data first and click "DRAW" button to display plot.', horizontalalignment='center', verticalalignment='center', transform=ax.transAxes)
+        # Hide the x and y axis ticks
+        ax.set_xticks([])
+        ax.set_yticks([]) 
+        return fig, ax
+    except Exception as e:
+        print("This is error message: ", e)
 
 def draw_local_graph(file_path):
     """
@@ -90,18 +100,127 @@ def draw_local_graph(file_path):
             ax2.legend(loc='upper right')
 
             return fig, ax1
-        elif 'Time' in data.columns:
+        elif 'Date' in data.columns:
             # Create chart
             fig, ax = plt.subplots(figsize=(10, 6))
 
-            data['Time'] = pd.to_datetime(data['Time'])
+            data['Date'] = pd.to_datetime(data['Date'])
             # Draw line plot
-            ax.plot(data['Time'], data['Temperature (°C)'], marker='o') # A function for drawing Line Chart
+            ax.plot(data['Date'], data['Temperature (°C)'], marker='o', label='Original Data')
 
             # Set up title and label
             ax.set_title("Temperature forecast for the next 24 hours")
-            ax.set_xlabel("Time") # A label of x-axiss
+            ax.set_xlabel("Date") # A label of x-axiss
             ax.set_ylabel("Temp (°C)") # A label of y-axis
+            
+            # Make X axis tilt 45 degrees
+            plt.xticks(rotation=45)
+            # Add grid line
+            plt.grid(True)
+
+            return fig, ax
+    except Exception as e:
+        print("Oops! Something wrong: ", e)
+
+def draw_merge_graph(file_path, merge_file_path):
+    try:
+        original_data = pd.read_csv(file_path)
+        merged_data = pd.read_csv(merge_file_path)
+        
+        fig, ax = plt.subplots(figsize=(10, 6))
+
+        original_data['Date'] = pd.to_datetime(original_data['Date'])
+        merged_data['Date'] = pd.to_datetime(merged_data['Date'])
+
+        # Convert date format
+        ax.plot(original_data['Date'], original_data['Temperature (°C)'], color = 'blue', label="Original Data")
+        ax.plot(merged_data['Date'], merged_data['Temperature (°C)'], color = 'red', label="Merged Data", linestyle="--")
+
+        ax.legend()
+        ax.grid()
+        ax.set_title("Original and Merged Data Comparison")
+        
+        return fig, ax
+    except Exception as e:
+        print(f"Error in draw_merge_graph: {e}")
+        return None
+
+
+# I got idea from: https://www.geeksforgeeks.org/bar-plot-in-matplotlib/
+def draw_current_data_from_remote(result):
+    """
+    Create current weather data plot based on data from JsnDrop
+
+    Returns:
+        matplotlib.figure.Figure: A Matplotlib figure object with the current weather bar plot.
+    """
+    try:
+        if result:
+            temperature = result["temperature"]
+            humidity = result["humidity"]
+            wind = result["wind"]
+            cloud = result["cloud"]
+
+            fig, ax1 = plt.subplots(figsize=(10, 6))
+
+            # Create first axis
+            ax1.set_xlabel('Weather Parameters')
+            ax1.set_ylabel('Temp & Humidity', color='blue')
+            ax1.bar(['Temperature (°C)', 'Humidity (%)'], 
+                    [temperature, humidity], 
+                    color='blue', alpha=0.6, label='Temp & Humidity')
+            ax1.tick_params(axis='y', labelcolor='blue')
+
+            # Create second axis
+            ax2 = ax1.twinx()
+            ax2.set_ylabel('Wind Speed, Cloud Cover', color='red')
+            ax2.bar(['Wind Speed (m/s)', 'Cloud info'], 
+                    [wind, cloud], 
+                    color='red', alpha=0.6, label='Wind, Cloud & Rain')
+            ax2.tick_params(axis='y', labelcolor='red')
+
+            # Add title and legend
+            fig.suptitle('Current Weather with Dual Axes')
+            ax1.legend(loc='upper left')
+            ax2.legend(loc='upper right')
+
+            return fig, ax1
+        else:
+            return None
+    except Exception as e:
+        print("Error message:", e)
+        return None
+
+
+def draw_forecast_data_from_remote(result):
+    """
+    Create forecast weather data plot based on data from JsnDrop
+
+    Returns:
+        matplotlib.figure.Figure: A Matplotlib figure object with the temperature forecast line plot.
+    """
+    try:
+        if result:
+            # Create chart
+            fig, ax = plt.subplots(figsize=(10, 6))
+            
+            # Extract all date and temperature from result, is a list comprehension
+            dates = [entry["Date"] for entry in result]
+            formatted_date = pd.to_datetime(dates)
+
+            # Convert temperature to float
+            temperatures = [float(entry["Temperature"]) for entry in result]
+
+            # Create chart
+            fig, ax = plt.subplots(figsize=(10, 6))
+
+            # Draw line plot
+            ax.plot(formatted_date, temperatures, marker='o')
+
+            # Set up title and label
+            ax.set_title("Temperature forecast for the next 24 hours")
+            ax.set_xlabel("Date")
+            ax.set_ylabel("Temp (°C)")
             
             # Make X axis tilt 45 degrees
             plt.xticks(rotation=45)
@@ -109,85 +228,11 @@ def draw_local_graph(file_path):
             # Add grid line
             plt.grid(True)
             return fig, ax
+        else:
+            return None
     except Exception as e:
-        print("Oops! Something wrong: ", e)
-
-def draw_remote_graph(file_path):
-
-    pass
-
-# I got idea from: https://www.geeksforgeeks.org/bar-plot-in-matplotlib/
-def draw_current_temperature(current_data):
-    """
-    Create a bar plot for current weather data.
-
-    Args:
-        current_data (dict): Current weather data got from the OpenWeather API.
-
-    Returns:
-        matplotlib.figure.Figure: A Matplotlib figure object with the current weather bar plot.
-    """
-    categories = ['Temperature (°C)', 'Humidity (%)', 'Wind Speed (m/s)', 'Cloud Cover (%)', 'Rain (mm)']
-
-    current_temp_celsius = current_data["main"]["temp"] - 273.15
-    current_humidity = current_data["main"]["humidity"]
-    current_wind_speed = current_data["wind"]["speed"]
-    current_cloud_cover = current_data["clouds"]["all"]
-    # # Handle the case where rainfall may not exist
-    current_rain = current_data.get("rain", {}).get("1h", 0)  
-    
-    values_1 = [current_temp_celsius, current_humidity]
-    values_2 = [current_wind_speed, current_cloud_cover, current_rain]
-
-    fig, ax1 = plt.subplots(figsize=(10, 6))
-
-    ax1.bar(categories[:2], values_1, color='blue', width=0.4, label="Temp & Humidity")
-    ax1.legend()
-    ax1.set_title("Current Weather with Dual Axes")
-    ax1.set_xlabel('Weather Parameters')
-    ax1.set_ylabel('Temp & Humidity', color='blue')
-
-    # Draw another y axis of Bar Plot
-    ax2 = ax1.twinx()
-    ax2.bar(categories[2:], values_2, color='red', width=0.4, label="Wind, Cloud & Rain")
-    ax2.legend()
-    ax2.set_ylabel('Wind Speed, Cloud Cover & Rain', color='red')
-    plt.tight_layout()
-    # plt.show()
-    return fig
-
-
-def draw_forecast_temperature(forecast_data):
-    """
-    Create a line plot for the temperature forecast for next 24 hours.
-
-    Args:
-        forecast_data (dict): Forecast weather data got from the OpenWeather API.
-
-    Returns:
-        matplotlib.figure.Figure: A Matplotlib figure object with the temperature forecast line plot.
-    """
-    # Get time and temp data from API
-    times = []
-    temperatures = []
-    
-    # Weather data for the next 24 hours (one data point every 3 hours)
-    for i in forecast_data["list"][:8]:  
-        forecast_time = i["dt_txt"]
-        forecast_temp = i["main"]["temp"] - 273.15 # Convert from Kelvin to Celsius
-        times.append(forecast_time)
-        temperatures.append(forecast_temp)
-
-    # Passing data into line plot to draw chart
-    fig = plt.figure(figsize=(10, 6)) # Create a new figure window and define size
-    plt.plot(times, temperatures, marker='o') # A function for drawing Line Chart
-    plt.xticks(rotation=45)
-    plt.xlabel("Time") # A label of x-axis
-    plt.ylabel("Temp (°C)") # A label of y-axis
-    plt.title("Temperature forecast for the next 24 hours") # Title of Line Chart
-    plt.grid(True) # Add grid line to help read
-    plt.tight_layout() # Change the layout of chart automatically
-    return fig
+        print("Error fetching data:", e)
+        return None
 
 
 def zoom_in(ax1, ax2=None):
@@ -244,15 +289,3 @@ def zoom_out(ax1, ax2=None):
         ax1.figure.canvas.draw_idle()
     except Exception as e:
         print("Oops! Something wrong: ", e)
-
-# def main():
-#     current_data, forecast_data = data.get_weather_data()
-#     if current_data:
-#         draw_current_temperature(current_data)
-#     else:
-#         print("Getting current weather data fail!")
-
-#     if forecast_data:
-#         draw_forecast_temperature(forecast_data)
-#     else:
-#         print("Getting weather forecast data fail!")

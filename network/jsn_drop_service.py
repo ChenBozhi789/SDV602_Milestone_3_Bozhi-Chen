@@ -49,9 +49,9 @@ class jsnDrop(object):
         self.jsnResult = jsnResponse["Msg"]
 
         # Feedback to check it works
-        print(f"Status = {self.jsnStatus} , Result = {self.jsnResult}")
+        # print(f"Status = {self.jsnStatus} , Result = {self.jsnResult}")
+        print("-" * 50)
         return self.jsnResult 
-
     
     def create(self,table_name, example):
         command = self.jsnDropCreate
